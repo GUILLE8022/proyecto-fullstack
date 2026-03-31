@@ -1,26 +1,30 @@
 {
-  "name": "proyecto-fulstack",
+  "name": "proyecto-fullstack",
   "version": "1.0.0",
-  "main": "index.js",
+  "type": "module",
+  "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "node server.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Beltran18/proyecto-fullstack.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Miguel Beltran",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Beltran18/proyecto-fullstack/issues"
   },
   "homepage": "https://github.com/Beltran18/proyecto-fullstack#readme",
-  "description": "",
+  "description": "Proyecto FullStack tienda de motos",
   "dependencies": {
-    "cors": "^2.8.6",
-    "dotenv": "^17.3.1",
-    "express": "^5.2.1",
-    "mongoose": "^9.3.3"
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.0.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.0"
   }
 }
