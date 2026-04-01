@@ -11,11 +11,13 @@ function Home() {
     precio: "",
     cilindraje: "",
     stock: "",
-    imagen: ""
+    imagen: "",
+    segmento: ""
   });
   const [showForm, setShowForm] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [editingMoto, setEditingMoto] = useState(null);
 
   useEffect(() => {
     loadMotos();
@@ -31,6 +33,20 @@ function Home() {
     }
   };
 
+  const handleEdit = (moto) => {
+    setEditingMoto(moto);
+    setForm({
+      marca: moto.marca,
+      modelo: moto.modelo,
+      precio: moto.precio.toString(),
+      cilindraje: moto.cilindraje.toString(),
+      stock: moto.stock.toString(),
+      imagen: moto.imagen,
+      segmento: moto.segmento || ""
+    });
+    setShowForm(true);
+  };
+
   const handleChange = (e) => {
     setForm({
       ...form,
@@ -43,18 +59,24 @@ function Home() {
     try {
       setLoading(true);
       setError("");
-      await API.post("/motos", {
+      const data = {
         ...form,
         precio: Number(form.precio),
         cilindraje: Number(form.cilindraje),
         stock: Number(form.stock) || 10
-      });
-      setForm({ marca: "", modelo: "", precio: "", cilindraje: "", stock: "", imagen: "" });
+      };
+      if (editingMoto) {
+        await API.put(`/motos/${editingMoto._id}`, data);
+      } else {
+        await API.post("/motos", data);
+      }
+      setForm({ marca: "", modelo: "", precio: "", cilindraje: "", stock: "", imagen: "", segmento: "" });
       setShowForm(false);
+      setEditingMoto(null);
       loadMotos();
     } catch (err) {
       console.log(err);
-      setError(err.response?.data?.msg || "Error al crear moto");
+      setError(err.response?.data?.msg || "Error al guardar moto");
     } finally {
       setLoading(false);
     }
@@ -66,7 +88,13 @@ function Home() {
 
       {error && <p style={{ color: "red", textAlign: "center" }}>{error}</p>}
 
-      <button className="add-btn" onClick={() => setShowForm(!showForm)}>
+      <button className="add-btn" onClick={() => {
+        if (showForm && editingMoto) {
+          setEditingMoto(null);
+          setForm({ marca: "", modelo: "", precio: "", cilindraje: "", stock: "", imagen: "", segmento: "" });
+        }
+        setShowForm(!showForm);
+      }}>
         {showForm ? "Ocultar Formulario" : "Agregar Moto"}
       </button>
 
@@ -78,15 +106,30 @@ function Home() {
           <input name="cilindraje" type="number" placeholder="Cilindraje" value={form.cilindraje} onChange={handleChange} required />
           <input name="stock" type="number" placeholder="Stock" value={form.stock} onChange={handleChange} />
           <input name="imagen" placeholder="Imagen URL" value={form.imagen} onChange={handleChange} />
+          <input name="segmento" placeholder="Segmento (ej: Deportiva, Cruiser)" value={form.segmento} onChange={handleChange} />
           <button type="submit" disabled={loading}>
-            {loading ? "Creando..." : "Crear Moto"}
+            {loading ? "Guardando..." : editingMoto ? "Actualizar Moto" : "Crear Moto"}
           </button>
         </form>
       )}
 
-      <div className="motos-grid">
-        {motos.map((moto) => (
-          <MotoCard key={moto._id} moto={moto} onCompra={loadMotos} />
+      <div className="motos-container">
+        {Object.entries(
+          motos.reduce((acc, moto) => {
+            const segmento = moto.segmento || "General";
+            if (!acc[segmento]) acc[segmento] = [];
+            acc[segmento].push(moto);
+            return acc;
+          }, {})
+        ).map(([segmento, motosSegmento]) => (
+          <div key={segmento} className="segmento-section">
+            <h2>{segmento}</h2>
+            <div className="motos-grid">
+              {motosSegmento.map((moto) => (
+                <MotoCard key={moto._id} moto={moto} onCompra={loadMotos} onEdit={handleEdit} />
+              ))}
+            </div>
+          </div>
         ))}
       </div>
     </div>

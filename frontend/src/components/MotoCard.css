@@ -45,6 +45,22 @@
   cursor: not-allowed;
 }
 
+.edit-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.edit-btn:hover {
+  background: var(--accent-hover);
+}
+
 .message {
   margin-top: 10px;
   font-weight: bold;
