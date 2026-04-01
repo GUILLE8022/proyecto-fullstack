@@ -3,35 +3,50 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #000, #1f1f1f);
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
 }
 
 .box {
-  background: #111;
+  background: var(--secondary);
   padding: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius);
   width: 320px;
   text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .box h2 {
   margin-bottom: 10px;
+  color: var(--text);
 }
 
 .box p {
-  color: #aaa;
+  color: var(--gray);
   margin-bottom: 20px;
 }
 
 .error {
-  color: red;
+  color: #ff6b6b;
   font-size: 14px;
-}
-
-input {
   margin-bottom: 10px;
 }
 
+input {
+  background: var(--primary);
+  color: var(--text);
+  border: 1px solid var(--gray);
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
 button {
-  width: 100%;
+  margin-top: 10px;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }

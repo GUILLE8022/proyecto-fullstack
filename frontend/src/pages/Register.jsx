@@ -11,25 +11,44 @@ function Register() {
   });
 
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value
+    });
+  };
 
   const handleRegister = async () => {
     try {
-      console.log("Enviando datos:", form);
+      setLoading(true);
+      setError("");
 
-      const res = await API.post("/auth/register", form);
+      const cleanForm = {
+        nombre: form.nombre.trim(),
+        email: form.email.trim(),
+        password: form.password.trim()
+      };
+
+      console.log("Enviando:", cleanForm);
+
+      const res = await API.post("/auth/register", cleanForm);
 
       console.log("Respuesta:", res.data);
 
       alert("Usuario creado correctamente");
 
-      navigate("/login");
+      navigate("/");
     } catch (err) {
       console.error(err);
 
       setError(
-        err.response?.data?.message || "Error al registrar usuario"
+        err.response?.data?.msg || "Error al registrar usuario"
       );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -38,36 +57,38 @@ function Register() {
       <div className="box">
         <h2>Crear cuenta</h2>
 
-        {error && <span className="error">{error}</span>}
+        {error && <p className="error">{error}</p>}
 
         <input
+          type="text"
+          name="nombre"
           placeholder="Nombre"
-          onChange={(e) =>
-            setForm({ ...form, nombre: e.target.value })
-          }
+          value={form.nombre}
+          onChange={handleChange}
         />
 
         <input
+          type="email"
+          name="email"
           placeholder="Correo"
-          onChange={(e) =>
-            setForm({ ...form, email: e.target.value })
-          }
+          value={form.email}
+          onChange={handleChange}
         />
 
         <input
           type="password"
+          name="password"
           placeholder="Contraseña"
-          onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
-          }
+          value={form.password}
+          onChange={handleChange}
         />
 
-        <button onClick={handleRegister}>
-          Registrarse
+        <button onClick={handleRegister} disabled={loading}>
+          {loading ? "Cargando..." : "Registrarse"}
         </button>
 
         <p>
-          ¿Ya tienes cuenta? <Link to="/login">Login</Link>
+          ¿Ya tienes cuenta? <Link to="/">Login</Link>
         </p>
       </div>
     </div>

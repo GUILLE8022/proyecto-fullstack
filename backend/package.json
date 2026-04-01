@@ -4,7 +4,10 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "seed:motos": "node src/seed/seedMotos.js",
+    "seed:usuarios": "node src/seed/seedUsuarios.js",
+    "seed": "npm run seed:usuarios && npm run seed:motos"
   },
   "repository": {
     "type": "git",

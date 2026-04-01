@@ -5,6 +5,7 @@ const motoSchema = new mongoose.Schema({
   modelo: String,
   precio: Number,
   cilindraje: Number,
+  stock: { type: Number, default: 10 },
   imagen: String
 });
 

@@ -1,7 +1,7 @@
 import fs from "fs";
 import csv from "csv-parser";
 import mongoose from "mongoose";
-import Moto from "../src/models/Moto.js";
+import Moto from "../models/Moto.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -15,6 +15,7 @@ fs.createReadStream("data/motos.csv")
   .on("data", (data) => {
     data.precio = Number(data.precio);
     data.cilindraje = Number(data.cilindraje);
+    data.stock = Number(data.stock || 10);
     results.push(data);
   })
   .on("end", async () => {

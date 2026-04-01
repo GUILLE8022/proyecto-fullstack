@@ -44,7 +44,7 @@ function Login() {
       localStorage.setItem("token", res.data.token);
 
       // redirigir
-      navigate("/");
+      navigate("/home");
 
     } catch (err) {
       console.error(err);

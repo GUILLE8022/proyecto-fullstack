@@ -1,21 +1,29 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import "./Navbar.css";
 
 function Navbar() {
-  const { user, logout } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
 
   return (
-    <nav style={{ padding: "10px", background: "#000", color: "#fff" }}>
-      <Link to="/" style={{ color: "#fff", marginRight: "10px" }}>Inicio</Link>
-
-      {!user ? (
-        <>
-          <Link to="/login" style={{ color: "#fff", marginRight: "10px" }}>Login</Link>
-          <Link to="/register" style={{ color: "#fff" }}>Registro</Link>
-        </>
-      ) : (
-        <button onClick={logout}>Cerrar sesión</button>
-      )}
+    <nav className="navbar">
+      <div className="nav-brand">
+        <Link to={isAuthenticated ? "/home" : "/"} className="nav-link">🏍️ MotoStore</Link>
+      </div>
+      <div className="nav-links">
+        {!isAuthenticated ? (
+          <>
+            <Link to="/" className="nav-link">Login</Link>
+            <Link to="/register" className="nav-link">Registro</Link>
+          </>
+        ) : (
+          <>
+            <Link to="/home" className="nav-link">Inicio</Link>
+            <Link to="/ventas" className="nav-link">Mis Compras</Link>
+            <button onClick={logout} className="logout-btn">Cerrar sesión</button>
+          </>
+        )}
+      </div>
     </nav>
   );
 }
