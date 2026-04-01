@@ -3,18 +3,31 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Navbar from "./components/Navbar";
+import PrivateRoute from "./components/PrivateRoute";
 import { AuthProvider } from "./context/AuthContext";
 
 function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Navbar />
 
         <Routes>
+          {/* PUBLICAS */}
           <Route path="/login" element={<Login />} />
-          <Route path="/" element={<Home />} />
           <Route path="/register" element={<Register />} />
+
+          {/* PRIVADAS */}
+          <Route
+            path="/"
+            element={
+              <PrivateRoute>
+                <>
+                  <Navbar />
+                  <Home />
+                </>
+              </PrivateRoute>
+            }
+          />
         </Routes>
 
       </BrowserRouter>
