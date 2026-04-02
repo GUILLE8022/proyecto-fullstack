@@ -6,43 +6,101 @@ function MotoCard({ moto, onCompra, onEdit }) {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleComprar = async () => {
+  // 🔥 VENDER MOTO (ANTES COMPRAR)
+  const handleVender = async () => {
     try {
       setLoading(true);
       setMessage("");
 
-      const res = await API.post("/ventas", { motoId: moto._id });
+      await API.post("/ventas", {
+        motoId: moto._id,
+        cantidad: 1
+      });
 
-      setMessage("Compra realizada exitosamente!");
+      setMessage("✅ Venta realizada");
+
+      // 🔥 ACTUALIZA STOCK AUTOMÁTICO
       if (onCompra) onCompra();
+
     } catch (err) {
       console.error(err);
-      setMessage(err.response?.data?.msg || "Error al comprar");
+      setMessage("❌ Error al vender");
     } finally {
       setLoading(false);
     }
   };
 
+  // 🗑️ DELETE PRO
+  const handleDelete = async () => {
+    const confirmDelete = window.confirm("¿Eliminar esta moto?");
+    if (!confirmDelete) return;
+
+    try {
+      await API.delete(`/motos/${moto._id}`);
+      setMessage("🗑️ Moto eliminada");
+
+      if (onCompra) onCompra();
+    } catch (err) {
+      console.error(err);
+      setMessage("❌ Error al eliminar");
+    }
+  };
+
   return (
     <div className="moto-card">
-      {moto.imagen && <img src={moto.imagen} alt={moto.modelo} className="moto-img" />}
+
+      <img
+        src={moto.imagen || "https://via.placeholder.com/300"}
+        alt={moto.modelo}
+        className="moto-img"
+      />
+
       <h3>{moto.marca} {moto.modelo}</h3>
+
       <p className="moto-price">💰 ${moto.precio}</p>
       <p>⚙️ {moto.cilindraje} cc</p>
       <p>📦 Stock: {moto.stock}</p>
-      {onEdit && (
-        <button onClick={() => onEdit(moto)} className="edit-btn">
-          Editar
+      <p>🏁 {moto.segmento}</p>
+
+      {/* 🔥 BOTONES PRO */}
+      <div className="card-actions">
+
+        {/* VENDER */}
+        <button
+          onClick={handleVender}
+          disabled={loading || moto.stock <= 0}
+          className="sell-btn"
+        >
+          {loading ? "Procesando..." : moto.stock > 0 ? "Vender" : "Sin stock"}
         </button>
+
+        {/* EDITAR (NO SE QUITA) */}
+        {onEdit && (
+          <button
+            onClick={() => onEdit(moto)}
+            className="edit-btn"
+          >
+            Editar
+          </button>
+        )}
+
+        {/* DELETE */}
+        <button
+          onClick={handleDelete}
+          className="delete-btn"
+        >
+          Eliminar
+        </button>
+
+      </div>
+
+      {/* MENSAJE */}
+      {message && (
+        <p className={`message ${message.includes("Error") ? "error" : "success"}`}>
+          {message}
+        </p>
       )}
-      <button
-        onClick={handleComprar}
-        disabled={loading || moto.stock <= 0}
-        className="buy-btn"
-      >
-        {loading ? "Comprando..." : moto.stock > 0 ? "Comprar" : "Sin Stock"}
-      </button>
-      {message && <p className={`message ${message.includes("Error") ? "error" : "success"}`}>{message}</p>}
+
     </div>
   );
 }

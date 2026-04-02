@@ -29,10 +29,10 @@ function Ventas() {
 
   return (
     <div className="ventas">
-      <h1>📊 Mis Compras</h1>
+      <h1>📊 Mis Ventas</h1>
 
       {ventas.length === 0 ? (
-        <p>No has realizado compras aún.</p>
+        <p>No has realizado ventas aún.</p>
       ) : (
         <div className="ventas-list">
           {ventas.map((venta) => (
