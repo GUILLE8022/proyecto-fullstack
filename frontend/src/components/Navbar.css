@@ -1,57 +1,113 @@
+/* NAVBAR CONTENEDOR */
 .navbar {
-  background: #0f172a;
-  padding: 15px 40px;
-  display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  padding: 18px 40px;
+  background: #0f172a; /* azul oscuro elegante */
+  border-bottom: 1px solid #1e293b;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 /* LOGO */
-.logo {
-  color: #00c896;
+.nav-brand .nav-link {
   font-size: 22px;
-  font-weight: bold;
+  font-weight: 700;
+  color: #38bdf8;
   text-decoration: none;
-}
-
-/* SEARCH */
-.nav-search {
-  display: flex;
-  justify-content: center;
-}
-
-.nav-search input {
-  width: 70%;
-  max-width: 400px;
-  padding: 10px 15px;
-  border-radius: 30px;
-  border: none;
-  background: #1e293b;
-  color: white;
-  outline: none;
 }
 
 /* LINKS */
-.nav-right {
+.nav-links {
   display: flex;
-  justify-content: flex-end;
-  gap: 20px;
+  align-items: center;
+  gap: 25px;
 }
 
+/* LINK INDIVIDUAL */
 .nav-link {
-  color: #cbd5e1;
+  color: #e2e8f0;
   text-decoration: none;
+  font-weight: 500;
+  transition: 0.3s ease;
 }
 
 .nav-link:hover {
-  color: #00c896;
+  color: #38bdf8;
 }
 
-/* BOTÓN */
+/* BOTÓN LOGOUT */
 .logout-btn {
   background: #ef4444;
   color: white;
-  padding: 8px 12px;
+  padding: 10px 18px;
   border-radius: 8px;
   border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.logout-btn:hover {
+  background: #dc2626;
+}
+
+/* 🔍 BUSCADOR */
+.nav-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #1e293b;
+  padding: 6px 10px;
+  border-radius: 10px;
+  width: 320px;
+}
+
+.nav-search input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  color: #e2e8f0;
+  outline: none;
+  padding: 8px;
+}
+
+.nav-search input::placeholder {
+  color: #94a3b8;
+}
+
+/* BOTÓN BUSCAR */
+.nav-search button {
+  background: #38bdf8;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  color: #0f172a;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.nav-search button:hover {
+  background: #0ea5e9;
+}
+
+/* 🔥 RESPONSIVE */
+@media (max-width: 900px) {
+  .navbar {
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+
+  .nav-search {
+    order: 3;
+    width: 100%;
+  }
+
+  .nav-links {
+    gap: 15px;
+  }
 }

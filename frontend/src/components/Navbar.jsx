@@ -8,6 +8,13 @@ function Navbar() {
   const [busqueda, setBusqueda] = useState("");
   const navigate = useNavigate();
 
+  // 🔥 LOGOUT COMPLETO
+  const handleLogout = () => {
+    logout(); // elimina token
+    navigate("/", { replace: true }); // redirige y bloquea volver atrás
+  };
+
+  // 🔍 BUSCADOR
   const handleSearch = (e) => {
     e.preventDefault();
 
@@ -16,32 +23,35 @@ function Navbar() {
     } else {
       navigate(`/home?search=${busqueda}`);
     }
+
+    setBusqueda("");
   };
 
   return (
     <nav className="navbar">
 
-      {/* IZQUIERDA */}
-      <div className="nav-left">
-        <Link to="/home" className="logo">
+      {/* LOGO */}
+      <div className="nav-brand">
+        <Link to={isAuthenticated ? "/home" : "/"} className="nav-link">
           🏍️ MotoStore
         </Link>
       </div>
 
-      {/* CENTRO 🔍 */}
+      {/* 🔍 BUSCADOR */}
       {isAuthenticated && (
         <form className="nav-search" onSubmit={handleSearch}>
           <input
             type="text"
-            placeholder="🔍 Buscar por marca, modelo o segmento..."
+            placeholder="Buscar motos..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
           />
+          <button type="submit">Buscar</button>
         </form>
       )}
 
-      {/* DERECHA */}
-      <div className="nav-right">
+      {/* LINKS */}
+      <div className="nav-links">
         {!isAuthenticated ? (
           <>
             <Link to="/" className="nav-link">Login</Link>
@@ -51,13 +61,13 @@ function Navbar() {
           <>
             <Link to="/home" className="nav-link">Inicio</Link>
             <Link to="/ventas" className="nav-link">Ventas</Link>
-            <button onClick={logout} className="logout-btn">
+
+            <button onClick={handleLogout} className="logout-btn">
               Cerrar sesión
             </button>
           </>
         )}
       </div>
-
     </nav>
   );
 }

@@ -1,9 +1,13 @@
 import { Navigate } from "react-router-dom";
 
-function PrivateRoute({ children }) {
+function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
 
-  return token ? children : <Navigate to="/" />;
+  if (!token) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
 }
 
-export default PrivateRoute;
+export default ProtectedRoute;
