@@ -17,14 +17,19 @@ app.use("/api/auth", authRoutes);
 app.use("/api/motos", motoRoutes);
 app.use("/api/ventas", ventaRoutes);
 
+// ruta de prueba (recomendado)
+app.get("/", (req, res) => {
+  res.send("API funcionando 🚀");
+});
+
 // conexión DB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado"))
   .catch(err => console.log(err));
 
-// puerto
-const PORT = 3000;
+// puerto correcto
+const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor en puerto ${PORT}`);
 });
