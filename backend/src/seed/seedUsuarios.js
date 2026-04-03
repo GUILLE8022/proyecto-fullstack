@@ -1,30 +1,62 @@
+import mongoose from "mongoose";
+import dotenv from "dotenv";
 import fs from "fs";
 import csv from "csv-parser";
-import mongoose from "mongoose";
-import Usuario from "../models/Usuario.js";
 import bcrypt from "bcrypt";
-import dotenv from "dotenv";
+import Usuario from "../models/Usuario.js";
 
 dotenv.config();
 
-mongoose.connect(process.env.MONGO_URI);
+const seedUsuarios = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("✅ Mongo conectado");
 
-const results = [];
+    await Usuario.deleteMany();
+    console.log("🧹 Usuarios eliminados");
 
-fs.createReadStream("data/usuarios.csv")
-  .pipe(csv())
-  .on("data", (data) => {
-    results.push(data);
-  })
-  .on("end", async () => {
-    for (const user of results) {
-      const hash = await bcrypt.hash(user.password, 10);
-      await Usuario.create({
-        nombre: user.nombre,
-        email: user.email,
-        password: hash
+    const usuarios = [];
+    const emailsSet = new Set(); // 🔥 evitar duplicados
+
+    fs.createReadStream("src/data/usuarios.csv")
+      .pipe(csv({ separator: "," }))
+      .on("data", (row) => {
+        const nombre = row.nombre?.trim();
+        const email = row.email?.trim().toLowerCase();
+        const password = row.password?.trim();
+
+        // 🚨 Validaciones
+        if (!nombre || !email || !password) return;
+        if (emailsSet.has(email)) return;
+
+        emailsSet.add(email);
+
+        usuarios.push({ nombre, email, password });
+      })
+      .on("end", async () => {
+        console.log("🔐 Encriptando contraseñas...");
+
+        const usuariosFinal = await Promise.all(
+          usuarios.map(async (user) => ({
+            nombre: user.nombre,
+            email: user.email,
+            password: await bcrypt.hash(user.password, 10),
+            rol: "user"
+          }))
+        );
+
+        await Usuario.insertMany(usuariosFinal, {
+          ordered: false // 🔥 evita que se caiga por errores
+        });
+
+        console.log("✅ Usuarios insertados:", usuariosFinal.length);
+        process.exit();
       });
-    }
-    console.log("✅ Usuarios insertados");
-    process.exit();
-  });
+
+  } catch (error) {
+    console.error("❌ Error en seedUsuarios:", error);
+    process.exit(1);
+  }
+};
+
+seedUsuarios();
