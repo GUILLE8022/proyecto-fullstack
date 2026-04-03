@@ -4,25 +4,13 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "dev": "node server.js",
     "seed:motos": "node src/seed/seedMotos.js",
     "seed:usuarios": "node src/seed/seedUsuarios.js",
     "seed": "npm run seed:usuarios && npm run seed:motos"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Beltran18/proyecto-fullstack.git"
-  },
-  "keywords": [],
-  "author": "Miguel Beltran",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/Beltran18/proyecto-fullstack/issues"
-  },
-  "homepage": "https://github.com/Beltran18/proyecto-fullstack#readme",
-  "description": "Proyecto FullStack tienda de motos",
   "dependencies": {
-    "bcrypt": "^5.1.0",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "csv-parser": "^3.0.0",
