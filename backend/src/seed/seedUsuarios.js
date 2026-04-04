@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import fs from "fs";
 import csv from "csv-parser";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs"; 
 import Usuario from "../models/Usuario.js";
 
 dotenv.config();
@@ -16,7 +16,7 @@ const seedUsuarios = async () => {
     console.log("🧹 Usuarios eliminados");
 
     const usuarios = [];
-    const emailsSet = new Set(); // 🔥 evitar duplicados
+    const emailsSet = new Set(); // evitar duplicados
 
     fs.createReadStream("src/data/usuarios.csv")
       .pipe(csv({ separator: "," }))
@@ -25,7 +25,7 @@ const seedUsuarios = async () => {
         const email = row.email?.trim().toLowerCase();
         const password = row.password?.trim();
 
-        // 🚨 Validaciones
+        // Validaciones
         if (!nombre || !email || !password) return;
         if (emailsSet.has(email)) return;
 
@@ -46,7 +46,7 @@ const seedUsuarios = async () => {
         );
 
         await Usuario.insertMany(usuariosFinal, {
-          ordered: false // 🔥 evita que se caiga por errores
+          ordered: false
         });
 
         console.log("✅ Usuarios insertados:", usuariosFinal.length);
