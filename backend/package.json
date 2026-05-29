@@ -7,8 +7,8 @@
     "start": "node server.js",
     "dev": "node server.js",
     "seed": "node src/seed/index.js",
-    "seed:motos": "node src/seed/index.js",
-    "seed:usuarios": "node src/seed/index.js"
+    "seed:incremental": "node src/seed/seedIncremental.js",
+    "seed:full": "node src/seed/index.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

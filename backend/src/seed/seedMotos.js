@@ -1,5 +1,4 @@
 /**
- * @deprecated Usar: npm run seed
- * Importa datos completos desde CSV
+ * @deprecated Usar: npm run seed:incremental
  */
-import "./index.js";
+import "./seedIncremental.js";
