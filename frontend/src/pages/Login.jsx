@@ -1,96 +1,96 @@
 import { useState } from "react";
-import { API } from "../services/api";
 import { useNavigate, Link } from "react-router-dom";
-import "./auth.css";
+import toast from "react-hot-toast";
+import { authAPI } from "../api/endpoints";
+import { useAuthStore } from "../store/authStore";
+import "../styles/auth.css";
 
-function Login() {
-  const navigate = useNavigate();
-
-  // ✅ estado bien inicializado
-  const [form, setForm] = useState({
-    email: "",
-    password: ""
-  });
-
-  const [error, setError] = useState("");
+export default function Login() {
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const { login } = useAuthStore();
 
-  // ✅ manejar inputs correctamente
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value
-    });
+  const validate = () => {
+    const next = {};
+    if (!form.email.trim()) next.email = "El email es obligatorio";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) next.email = "Email inválido";
+    if (!form.password) next.password = "La contraseña es obligatoria";
+    setErrors(next);
+    return Object.keys(next).length === 0;
   };
 
-  // ✅ login limpio y seguro
-  const handleLogin = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
     try {
       setLoading(true);
-      setError("");
-
-      const cleanForm = {
-        email: form.email.trim(),
-        password: form.password.trim()
-      };
-
-      console.log("Enviando:", cleanForm);
-
-      const res = await API.post("/auth/login", cleanForm);
-
-      console.log("Respuesta:", res.data);
-
-      // guardar token
-      localStorage.setItem("token", res.data.token);
-
-      // redirigir
-      navigate("/home");
-
-    } catch (err) {
-      console.error(err);
-
-      setError(
-        err.response?.data?.msg || "Error al iniciar sesión"
-      );
+      const data = await authAPI.login(form);
+      login(data.usuario, data.token);
+      toast.success(`¡Bienvenido, ${data.usuario.nombre}!`);
+      navigate("/dashboard");
+    } catch (error) {
+      toast.error(error.message || "Error al iniciar sesión");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="auth">
-      <div className="box">
-        <h2>Iniciar sesión</h2>
-        <p>Accede a tu cuenta</p>
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-box">
+          <div className="auth-header">
+            <Link to="/" className="auth-logo">🏍️ MotoStore</Link>
+            <h2>Iniciar sesión</h2>
+            <p>Accede a tu dashboard, marketplace e historial de ventas.</p>
+          </div>
 
-        {error && <p className="error">{error}</p>}
+          <form onSubmit={handleSubmit} className="auth-form" noValidate>
+            <div className={`form-group ${errors.email ? "has-error" : ""}`}>
+              <label htmlFor="email">Email</label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                placeholder="tu@email.com"
+                disabled={loading}
+              />
+              {errors.email && <span className="field-error">{errors.email}</span>}
+            </div>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Correo"
-          value={form.email}
-          onChange={handleChange}
-        />
+            <div className={`form-group ${errors.password ? "has-error" : ""}`}>
+              <label htmlFor="password">Contraseña</label>
+              <input
+                id="password"
+                type="password"
+                name="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="••••••"
+                disabled={loading}
+              />
+              {errors.password && <span className="field-error">{errors.password}</span>}
+            </div>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          value={form.password}
-          onChange={handleChange}
-        />
+            <button type="submit" disabled={loading} className="auth-button">
+              {loading ? "Ingresando..." : "Iniciar sesión"}
+            </button>
+          </form>
 
-        <button onClick={handleLogin} disabled={loading}>
-          {loading ? "Cargando..." : "Iniciar sesión"}
-        </button>
-
-        <p>
-          ¿No tienes cuenta? <Link to="/register">Regístrate</Link>
-        </p>
+          <div className="auth-footer">
+            <p>
+              ¿No tienes cuenta?{" "}
+              <Link to="/register">Regístrate gratis</Link> para publicar y comprar motos.
+            </p>
+            <Link to="/" className="back-link">← Volver al inicio</Link>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
-
-export default Login;

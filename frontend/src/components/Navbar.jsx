@@ -1,75 +1,38 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../hooks/useAuth";
-import { useState } from "react";
-import "./Navbar.css";
+import { useAuthStore } from "../store/authStore";
+import toast from "react-hot-toast";
+import "../styles/navbar.css";
 
-function Navbar() {
-  const { isAuthenticated, logout } = useAuth();
-  const [busqueda, setBusqueda] = useState("");
+export default function Navbar() {
+  const { user, logout, isAdmin } = useAuthStore();
   const navigate = useNavigate();
 
-  // 🔥 LOGOUT COMPLETO
   const handleLogout = () => {
-    logout(); // elimina token
-    navigate("/", { replace: true }); // redirige y bloquea volver atrás
-  };
-
-  // 🔍 BUSCADOR
-  const handleSearch = (e) => {
-    e.preventDefault();
-
-    if (busqueda.trim() === "") {
-      navigate("/home");
-    } else {
-      navigate(`/home?search=${busqueda}`);
-    }
-
-    setBusqueda("");
+    logout();
+    toast.success("Sesión cerrada");
+    navigate("/", { replace: true });
   };
 
   return (
-    <nav className="navbar">
+    <nav className="app-navbar">
+      <Link to="/dashboard" className="nav-brand">
+        🏍️ MotoStore
+      </Link>
 
-      {/* LOGO */}
-      <div className="nav-brand">
-        <Link to={isAuthenticated ? "/home" : "/"} className="nav-link">
-          🏍️ MotoStore
-        </Link>
+      <div className="nav-links">
+        <Link to="/dashboard">Dashboard</Link>
+        <Link to="/marketplace">Marketplace</Link>
+        <Link to="/mis-motos">Mis Motos</Link>
+        <Link to="/ventas">Historial</Link>
+        {isAdmin() && <Link to="/admin" className="nav-admin">Admin</Link>}
       </div>
 
-      {/* 🔍 BUSCADOR */}
-      {isAuthenticated && (
-        <form className="nav-search" onSubmit={handleSearch}>
-          <input
-            type="text"
-            placeholder="Buscar motos..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-          <button type="submit">Buscar</button>
-        </form>
-      )}
-
-      {/* LINKS */}
-      <div className="nav-links">
-        {!isAuthenticated ? (
-          <>
-            <Link to="/" className="nav-link">Login</Link>
-            <Link to="/register" className="nav-link">Registro</Link>
-          </>
-        ) : (
-          <>
-            <Link to="/home" className="nav-link">Inicio</Link>
-            <Link to="/ventas" className="nav-link">Ventas</Link>
-
-            <button onClick={handleLogout} className="logout-btn">
-              Cerrar sesión
-            </button>
-          </>
-        )}
+      <div className="nav-user">
+        <span className="user-name">{user?.nombre}</span>
+        <button type="button" className="btn-logout" onClick={handleLogout}>
+          Salir
+        </button>
       </div>
     </nav>
   );
 }
-
-export default Navbar;

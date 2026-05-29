@@ -1,49 +1,34 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Ventas from "./pages/Ventas";
-import Navbar from "./components/Navbar";
-import PrivateRoute from "./components/PrivateRoute";
-import { AuthProvider } from "./context/AuthContext";
+import { useEffect } from "react";
+import { BrowserRouter } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
+import { useAuthStore } from "./store/authStore";
+import AppRoutes from "./routes/AppRoutes";
+import "./styles/global.css";
+import "./styles/landing.css";
+import "./styles/components.css";
+import "./index.css";
 
 function App() {
+  const { checkAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <AuthProvider>
+    <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: { borderRadius: "10px", fontSize: "14px" }
+        }}
+      />
       <BrowserRouter>
-
-        <Routes>
-          {/* PUBLICAS */}
-          <Route path="/" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-
-          {/* PRIVADAS */}
-          <Route
-            path="/home"
-            element={
-              <PrivateRoute>
-                <>
-                  <Navbar />
-                  <Home />
-                </>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/ventas"
-            element={
-              <PrivateRoute>
-                <>
-                  <Navbar />
-                  <Ventas />
-                </>
-              </PrivateRoute>
-            }
-          />
-        </Routes>
-
+        <AppRoutes />
       </BrowserRouter>
-    </AuthProvider>
+    </>
   );
 }
 

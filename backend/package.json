@@ -1,22 +1,24 @@
 {
-  "name": "proyecto-fullstack",
+  "name": "motostore-backend",
   "version": "1.0.0",
   "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "seed:motos": "node src/seed/seedMotos.js",
-    "seed:usuarios": "node src/seed/seedUsuarios.js",
-    "seed": "npm run seed:usuarios && npm run seed:motos"
+    "seed": "node src/seed/index.js",
+    "seed:motos": "node src/seed/index.js",
+    "seed:usuarios": "node src/seed/index.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
+    "cors": "^2.8.6",
     "csv-parser": "^3.0.0",
-    "dotenv": "^16.4.5",
+    "dotenv": "^16.6.1",
     "express": "^4.18.2",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.3.0"
+    "express-validator": "^7.3.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^8.24.0",
+    "multer": "^2.1.1"
   }
 }

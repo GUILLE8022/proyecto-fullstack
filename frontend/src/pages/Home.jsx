@@ -1,153 +1,103 @@
 import { useEffect, useState } from "react";
-import { API } from "../services/api";
-import MotoCard from "../components/MotoCard";
-import { useLocation } from "react-router-dom";
-import "./Home.css";
+import toast from "react-hot-toast";
+import { motosAPI, ventasAPI } from "../api/endpoints";
+import ConfirmModal from "../components/ConfirmModal";
+import SkeletonCard from "../components/SkeletonCard";
+import EmptyState from "../components/EmptyState";
+import { resolveImageUrl } from "../utils/imageUrl";
+import "../styles/motos.css";
 
-function Home() {
+export default function Home() {
   const [motos, setMotos] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showForm, setShowForm] = useState(false);
-  const [editingMoto, setEditingMoto] = useState(null);
-
-  const [form, setForm] = useState({
-    marca: "",
-    modelo: "",
-    precio: "",
-    cilindraje: "",
-    stock: "",
-    imagen: "",
-    segmento: ""
-  });
-
-  const location = useLocation();
-  const params = new URLSearchParams(location.search);
-  const search = params.get("search") || "";
+  const [loading, setLoading] = useState(true);
+  const [comprando, setComprando] = useState(null);
+  const [confirmMoto, setConfirmMoto] = useState(null);
 
   useEffect(() => {
-    loadMotos();
-  }, [location.search]);
+    cargarMotos();
+  }, []);
 
-  const loadMotos = async () => {
+  const cargarMotos = async () => {
     try {
       setLoading(true);
-      const res = await API.get("/motos");
-      setMotos(res.data);
-    } catch (err) {
-      setError("Error al cargar motos");
+      const data = await motosAPI.getMarketplace();
+      setMotos(Array.isArray(data) ? data : []);
+    } catch (error) {
+      toast.error(error.message || "Error al cargar marketplace");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEdit = (moto) => {
-    setEditingMoto(moto);
-    setForm({
-      marca: moto.marca,
-      modelo: moto.modelo,
-      precio: moto.precio,
-      cilindraje: moto.cilindraje,
-      stock: moto.stock,
-      imagen: moto.imagen,
-      segmento: moto.segmento
-    });
-    setShowForm(true);
-  };
-
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const data = {
-      ...form,
-      precio: Number(form.precio),
-      cilindraje: Number(form.cilindraje),
-      stock: Number(form.stock)
-    };
-
-    if (editingMoto) {
-      await API.put(`/motos/${editingMoto._id}`, data);
-    } else {
-      await API.post("/motos", data);
+  const confirmarCompra = async () => {
+    if (!confirmMoto) return;
+    try {
+      setComprando(confirmMoto._id);
+      await ventasAPI.crear({ motoId: confirmMoto._id });
+      toast.success("¡Compra realizada con éxito!");
+      setConfirmMoto(null);
+      cargarMotos();
+    } catch (error) {
+      toast.error(error.message || "No se pudo completar la compra");
+    } finally {
+      setComprando(null);
     }
-
-    setShowForm(false);
-    setEditingMoto(null);
-    loadMotos();
   };
-
-  const motosFiltradas = motos.filter((moto) => {
-    const texto = search.toLowerCase();
-    return (
-      moto.marca.toLowerCase().includes(texto) ||
-      moto.modelo.toLowerCase().includes(texto) ||
-      moto.segmento?.toLowerCase().includes(texto)
-    );
-  });
 
   return (
-    <div className="home">
+    <div className="page-container">
+      <header className="page-header">
+        <h1>🛒 Marketplace</h1>
+        <p>Explora motos disponibles de otros vendedores</p>
+      </header>
 
-      {/* HEADER */}
-      <div className="home-header">
-        <h1>🏍️ Inventario</h1>
-
-        <button
-          className="add-btn"
-          onClick={() => setShowForm(!showForm)}
-        >
-          {showForm ? "Cerrar" : "+ Nueva Moto"}
-        </button>
-      </div>
-
-      {/* BUSQUEDA INFO */}
-      {search && (
-        <p className="search-info">
-          Resultados para: <strong>{search}</strong>
-        </p>
-      )}
-
-      {error && <p className="error">{error}</p>}
-
-      {/* FORM */}
-      {showForm && (
-        <form onSubmit={handleSubmit} className="form">
-          <input name="marca" placeholder="Marca" value={form.marca} onChange={handleChange} required />
-          <input name="modelo" placeholder="Modelo" value={form.modelo} onChange={handleChange} required />
-          <input name="precio" type="number" placeholder="Precio" value={form.precio} onChange={handleChange} required />
-          <input name="cilindraje" type="number" placeholder="Cilindraje" value={form.cilindraje} onChange={handleChange} required />
-          <input name="stock" type="number" placeholder="Stock" value={form.stock} onChange={handleChange} />
-          <input name="imagen" placeholder="Imagen URL" value={form.imagen} onChange={handleChange} />
-          <input name="segmento" placeholder="Segmento" value={form.segmento} onChange={handleChange} />
-
-          <button type="submit">
-            {editingMoto ? "Actualizar" : "Crear"}
-          </button>
-        </form>
-      )}
-
-      {/* GRID */}
       {loading ? (
-        <p>Cargando...</p>
+        <SkeletonCard count={6} />
+      ) : motos.length === 0 ? (
+        <EmptyState
+          icon="🏍️"
+          title="No hay motos en el marketplace"
+          description="Vuelve más tarde o publica la tuya en Mis Motos."
+        />
       ) : (
         <div className="motos-grid">
-          {motosFiltradas.map((moto) => (
-            <MotoCard
-              key={moto._id}
-              moto={moto}
-              onCompra={loadMotos}
-              onEdit={handleEdit} // 🔥 AQUÍ ESTÁ LA CLAVE
-            />
+          {motos.map((moto) => (
+            <article key={moto._id} className="moto-card">
+              <img src={resolveImageUrl(moto.imagen)} alt={`${moto.marca} ${moto.modelo}`} loading="lazy" />
+              <div className="moto-info">
+                <h3>
+                  {moto.marca} {moto.modelo}
+                </h3>
+                <p className="precio">${Number(moto.precio).toLocaleString()}</p>
+                <p className="cilindraje">{moto.cilindraje} cc · {moto.segmento}</p>
+                <p className="vendedor">Vendedor: {moto.propietario?.nombre || "—"}</p>
+                <button
+                  type="button"
+                  className="btn-comprar"
+                  disabled={comprando === moto._id}
+                  onClick={() => setConfirmMoto(moto)}
+                >
+                  {comprando === moto._id ? "Procesando..." : "Comprar"}
+                </button>
+              </div>
+            </article>
           ))}
         </div>
       )}
 
+      <ConfirmModal
+        open={Boolean(confirmMoto)}
+        title="Confirmar compra"
+        message={
+          confirmMoto
+            ? `¿Deseas comprar ${confirmMoto.marca} ${confirmMoto.modelo} por $${Number(confirmMoto.precio).toLocaleString()}?`
+            : ""
+        }
+        confirmText="Comprar"
+        loading={Boolean(comprando)}
+        onConfirm={confirmarCompra}
+        onCancel={() => setConfirmMoto(null)}
+      />
     </div>
   );
 }
-
-export default Home;
