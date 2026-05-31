@@ -16,6 +16,14 @@ const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
+const requiredEnv = ["MONGO_URI", "JWT_SECRET"];
+const missingEnv = requiredEnv.filter((key) => !process.env[key]);
+if (missingEnv.length > 0) {
+  console.error("❌ Faltan variables de entorno:", missingEnv.join(", "));
+  console.error("   En Railway: Settings → Variables → agrega MONGO_URI y JWT_SECRET");
+  process.exit(1);
+}
+
 const app = express();
 
 // CORS manual primero (preflight OPTIONS) + cors package
@@ -51,27 +59,18 @@ app.use((req, res) => {
 
 app.use(errorHandler);
 
-if (!process.env.MONGO_URI) {
-  console.error("❌ MONGO_URI no está definida en .env");
-  process.exit(1);
-}
+const PORT = process.env.PORT || 3000;
 
-if (!process.env.JWT_SECRET) {
-  console.error("❌ JWT_SECRET no está definida en .env");
-  process.exit(1);
-}
+// Escuchar ANTES de conectar Mongo (Railway healthcheck necesita respuesta rápida)
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Servidor en puerto ${PORT}`);
+  console.log(`🌐 CORS FRONTEND_URL: ${process.env.FRONTEND_URL || "(auto: *.vercel.app)"}`);
+});
 
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB conectado"))
   .catch((err) => {
     console.error("❌ Error MongoDB:", err.message);
-    process.exit(1);
+    // No exit — el servidor sigue vivo para mostrar errores en logs
   });
-
-const PORT = process.env.PORT || 3000;
-
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`🚀 Servidor en puerto ${PORT}`);
-  console.log(`🌐 CORS FRONTEND_URL: ${process.env.FRONTEND_URL || "(no definida — se permite *.vercel.app)"}`);
-});
