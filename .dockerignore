@@ -1,0 +1,10 @@
+node_modules
+.git
+frontend
+*.md
+.env
+.env.*
+!backend/.env.example
+backend/node_modules
+backend/uploads/motos/*
+!backend/uploads/motos/.gitkeep
