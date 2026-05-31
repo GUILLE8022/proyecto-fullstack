@@ -9,7 +9,7 @@ import motoRoutes from "./src/routes/moto.routes.v2.js";
 import ventaRoutes from "./src/routes/venta.routes.v2.js";
 import uploadRoutes from "./src/routes/upload.routes.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
-import { corsOptions } from "./src/config/cors.js";
+import { corsOptions, corsPreflight } from "./src/config/cors.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +18,8 @@ dotenv.config();
 
 const app = express();
 
+// CORS manual primero (preflight OPTIONS) + cors package
+app.use(corsPreflight);
 app.use(cors(corsOptions));
 app.use(express.json({ limit: "10mb" }));
 
@@ -71,4 +73,5 @@ const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, "0.0.0.0", () => {
   console.log(`🚀 Servidor en puerto ${PORT}`);
+  console.log(`🌐 CORS FRONTEND_URL: ${process.env.FRONTEND_URL || "(no definida — se permite *.vercel.app)"}`);
 });

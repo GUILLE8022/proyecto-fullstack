@@ -4,7 +4,7 @@ const localOrigins = [
   "http://127.0.0.1:5173"
 ];
 
-const parseOrigins = () => {
+export const parseAllowedOrigins = () => {
   const fromEnv = [];
 
   if (process.env.FRONTEND_URLS) {
@@ -18,18 +18,14 @@ const parseOrigins = () => {
   return [...new Set([...fromEnv, ...localOrigins].filter(Boolean))];
 };
 
-const allowedOrigins = parseOrigins();
-
-const isAllowedOrigin = (origin) => {
+export const isAllowedOrigin = (origin) => {
   if (!origin) return true;
 
+  const allowedOrigins = parseAllowedOrigins();
   if (allowedOrigins.includes(origin)) return true;
 
-  // Vercel preview y production (*.vercel.app)
-  if (/^https:\/\/[\w-]+\.vercel\.app$/.test(origin)) return true;
-
-  // Railway previews (opcional)
-  if (/^https:\/\/[\w-]+\.up\.railway\.app$/.test(origin)) return true;
+  // Vercel: production y previews
+  if (/^https:\/\/[\w.-]+\.vercel\.app$/.test(origin)) return true;
 
   return false;
 };
@@ -40,12 +36,29 @@ export const corsOptions = {
       callback(null, true);
       return;
     }
-
-    console.warn(`⚠️ CORS bloqueado para origen: ${origin}`);
-    console.warn(`   Orígenes configurados: ${allowedOrigins.join(", ") || "(ninguno)"}`);
+    console.warn(`⚠️ CORS bloqueado: ${origin}`);
     callback(null, false);
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"]
+};
+
+/** Middleware manual — garantiza headers en preflight OPTIONS */
+export const corsPreflight = (req, res, next) => {
+  const origin = req.headers.origin;
+
+  if (origin && isAllowedOrigin(origin)) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Vary", "Origin");
+  }
+
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+
+  next();
 };
