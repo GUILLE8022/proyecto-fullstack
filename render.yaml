@@ -1,0 +1,20 @@
+# Blueprint opcional — Render puede importar este archivo al crear el servicio.
+# También puedes configurar todo manualmente en el dashboard (ver RENDER_DEPLOY.md).
+
+services:
+  - type: web
+    name: motostore-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://proyecto-fullstack-pied.vercel.app

@@ -20,7 +20,7 @@ const requiredEnv = ["MONGO_URI", "JWT_SECRET"];
 const missingEnv = requiredEnv.filter((key) => !process.env[key]);
 if (missingEnv.length > 0) {
   console.error("❌ Faltan variables de entorno:", missingEnv.join(", "));
-  console.error("   En Railway: Settings → Variables → agrega MONGO_URI y JWT_SECRET");
+  console.error("   En Render/Railway: agrega MONGO_URI y JWT_SECRET en Environment Variables");
   process.exit(1);
 }
 
