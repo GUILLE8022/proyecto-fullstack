@@ -309,6 +309,4 @@ Documentación completa con tablas de endpoints: [backend/README.md](./backend/R
 
 MIT
 
-## 📞 Contacto
 
-**Miguel Beltran** — [GitHub](https://github.com/Beltran18)
