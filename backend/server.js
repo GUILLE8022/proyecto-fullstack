@@ -14,7 +14,10 @@ import { corsOptions, corsPreflight } from "./src/config/cors.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-dotenv.config();
+// En producción (Render) usa solo variables del dashboard, no el .env del repo
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
 
 const requiredEnv = ["MONGO_URI", "JWT_SECRET"];
 const missingEnv = requiredEnv.filter((key) => !process.env[key]);
