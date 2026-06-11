@@ -62,7 +62,7 @@ export default function EditarMoto() {
         cilindraje: Number(form.cilindraje),
         descripcion: form.descripcion,
         segmento: form.segmento,
-        imagen: form.imagen,
+        imagen: form.imagen?.trim() || undefined,
         enVenta: disponible ? form.enVenta : false
       });
       toast.success("Moto actualizada");

@@ -18,10 +18,6 @@ const CAMPOS_EDITABLES = [
 export const getMarketplace = asyncHandler(async (req, res) => {
   const filtro = { disponible: true, enVenta: true };
 
-  if (req.user?.id) {
-    filtro.propietario = { $ne: req.user.id };
-  }
-
   const motos = await Moto.find(filtro)
     .populate("propietario", "nombre email")
     .sort({ createdAt: -1 });
@@ -58,7 +54,7 @@ export const crearMoto = asyncHandler(async (req, res) => {
     precio,
     cilindraje,
     descripcion,
-    imagen: imagen || undefined,
+    imagen: imagen?.trim() || undefined,
     segmento,
     enVenta: enVenta === true || enVenta === "true",
     propietario: req.user.id
@@ -114,6 +110,8 @@ export const toggleEnVenta = asyncHandler(async (req, res) => {
   );
 });
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export const marcarComoVendida = asyncHandler(async (req, res) => {
   const moto = req.moto;
   const { compradorEmail, compradorNombre, nota } = req.body;
@@ -122,21 +120,28 @@ export const marcarComoVendida = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Esta moto ya está marcada como vendida");
   }
 
-  let compradorId = null;
-  let nombreComprador = compradorNombre?.trim() || "";
+  const email = compradorEmail?.trim().toLowerCase() || "";
+  const nombre = compradorNombre?.trim() || "";
 
-  if (compradorEmail) {
-    const comprador = await Usuario.findOne({ email: compradorEmail.toLowerCase().trim() });
-    if (comprador) {
-      compradorId = comprador._id;
-      nombreComprador = comprador.nombre;
-    } else if (!nombreComprador) {
-      nombreComprador = compradorEmail;
-    }
+  if (!nombre) {
+    throw new ApiError(400, "El nombre del comprador es obligatorio");
   }
 
-  if (!nombreComprador) {
-    nombreComprador = "Comprador externo";
+  if (!email) {
+    throw new ApiError(400, "El email del comprador es obligatorio");
+  }
+
+  if (!EMAIL_REGEX.test(email)) {
+    throw new ApiError(400, "El email del comprador no tiene un formato válido");
+  }
+
+  let compradorId = null;
+  let nombreComprador = nombre;
+
+  const comprador = await Usuario.findOne({ email });
+  if (comprador) {
+    compradorId = comprador._id;
+    nombreComprador = comprador.nombre;
   }
 
   const venta = await Venta.create({
@@ -166,6 +171,13 @@ export const marcarComoVendida = asyncHandler(async (req, res) => {
 });
 
 export const eliminarMoto = asyncHandler(async (req, res) => {
+  if (!req.moto.disponible) {
+    throw new ApiError(
+      400,
+      "No se puede eliminar una moto vendida. Forma parte del historial de ventas."
+    );
+  }
+
   await Moto.findByIdAndDelete(req.moto._id);
 
   res.status(200).json(new ApiResponse(200, null, "Moto eliminada correctamente"));

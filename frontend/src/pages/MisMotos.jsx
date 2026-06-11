@@ -4,9 +4,9 @@ import toast from "react-hot-toast";
 import { motosAPI } from "../api/endpoints";
 import ConfirmModal from "../components/ConfirmModal";
 import ImageUpload from "../components/ImageUpload";
+import MotoImage from "../components/MotoImage";
 import SkeletonCard from "../components/SkeletonCard";
 import EmptyState from "../components/EmptyState";
-import { resolveImageUrl } from "../utils/imageUrl";
 import "../styles/motos.css";
 
 const FORM_INICIAL = {
@@ -20,6 +20,8 @@ const FORM_INICIAL = {
   enVenta: true
 };
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export default function MisMotos() {
   const [motos, setMotos] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,7 @@ export default function MisMotos() {
   const [eliminando, setEliminando] = useState(false);
   const [venderMoto, setVenderMoto] = useState(null);
   const [ventaForm, setVentaForm] = useState({ compradorEmail: "", compradorNombre: "", nota: "" });
+  const [ventaErrors, setVentaErrors] = useState({});
   const [vendiendo, setVendiendo] = useState(false);
   const navigate = useNavigate();
 
@@ -55,6 +58,7 @@ export default function MisMotos() {
       setGuardando(true);
       await motosAPI.create({
         ...form,
+        imagen: form.imagen?.trim() || undefined,
         precio: Number(form.precio),
         cilindraje: Number(form.cilindraje),
         enVenta: form.enVenta
@@ -80,20 +84,57 @@ export default function MisMotos() {
     }
   };
 
+  const validarVentaForm = () => {
+    const errors = {};
+    const nombre = ventaForm.compradorNombre.trim();
+    const email = ventaForm.compradorEmail.trim();
+
+    if (!nombre) {
+      errors.compradorNombre = "El nombre del comprador es obligatorio";
+    }
+
+    if (!email) {
+      errors.compradorEmail = "El email del comprador es obligatorio";
+    } else if (!EMAIL_REGEX.test(email)) {
+      errors.compradorEmail = "Ingresa un email válido";
+    }
+
+    setVentaErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const confirmarVenta = async () => {
-    if (!venderMoto) return;
+    if (!venderMoto || !validarVentaForm()) return;
+
     try {
       setVendiendo(true);
-      await motosAPI.marcarVendida(venderMoto._id, ventaForm);
+      await motosAPI.marcarVendida(venderMoto._id, {
+        compradorEmail: ventaForm.compradorEmail.trim(),
+        compradorNombre: ventaForm.compradorNombre.trim(),
+        nota: ventaForm.nota.trim()
+      });
       toast.success("¡Venta registrada en el historial!");
-      setVenderMoto(null);
-      setVentaForm({ compradorEmail: "", compradorNombre: "", nota: "" });
+      cerrarModalVenta();
       cargarMotos();
     } catch (error) {
       toast.error(error.message || "Error al registrar venta");
     } finally {
       setVendiendo(false);
     }
+  };
+
+  const cerrarModalVenta = () => {
+    setVenderMoto(null);
+    setVentaForm({ compradorEmail: "", compradorNombre: "", nota: "" });
+    setVentaErrors({});
+  };
+
+  const solicitarEliminar = (moto) => {
+    if (!moto.disponible) {
+      toast.error("Las motos vendidas no pueden eliminarse. Forman parte del historial.");
+      return;
+    }
+    setEliminarId(moto._id);
   };
 
   const confirmarEliminar = async () => {
@@ -202,7 +243,7 @@ export default function MisMotos() {
         <div className="motos-grid">
           {motos.map((moto) => (
             <article key={moto._id} className="moto-card mis-moto-card">
-              <img src={resolveImageUrl(moto.imagen)} alt={`${moto.marca} ${moto.modelo}`} loading="lazy" />
+              <MotoImage src={moto.imagen} alt={`${moto.marca} ${moto.modelo}`} />
               <div className="moto-info">
                 <h3>
                   {moto.marca} {moto.modelo}
@@ -238,7 +279,13 @@ export default function MisMotos() {
                     >
                       Editar
                     </button>
-                    <button type="button" className="btn btn-danger" onClick={() => setEliminarId(moto._id)}>
+                    <button
+                      type="button"
+                      className="btn btn-danger"
+                      disabled={!moto.disponible}
+                      title={!moto.disponible ? "Las motos vendidas forman parte del historial" : ""}
+                      onClick={() => solicitarEliminar(moto)}
+                    >
                       Eliminar
                     </button>
                   </div>
@@ -266,28 +313,46 @@ export default function MisMotos() {
             <p className="modal-subtitle">
               Se registrará en tu historial por ${Number(venderMoto.precio).toLocaleString()}
             </p>
-            <div className="form-group">
-              <label>Email del comprador (opcional)</label>
+            <div className={`form-group ${ventaErrors.compradorNombre ? "has-error" : ""}`}>
+              <label>Nombre del comprador *</label>
+              <input
+                type="text"
+                placeholder="Nombre completo del comprador"
+                value={ventaForm.compradorNombre}
+                onChange={(e) => {
+                  setVentaForm({ ...ventaForm, compradorNombre: e.target.value });
+                  if (ventaErrors.compradorNombre) {
+                    setVentaErrors({ ...ventaErrors, compradorNombre: "" });
+                  }
+                }}
+                disabled={vendiendo}
+                required
+              />
+              {ventaErrors.compradorNombre && (
+                <span className="field-error">{ventaErrors.compradorNombre}</span>
+              )}
+            </div>
+            <div className={`form-group ${ventaErrors.compradorEmail ? "has-error" : ""}`}>
+              <label>Email del comprador *</label>
               <input
                 type="email"
                 placeholder="comprador@email.com"
                 value={ventaForm.compradorEmail}
-                onChange={(e) => setVentaForm({ ...ventaForm, compradorEmail: e.target.value })}
+                onChange={(e) => {
+                  setVentaForm({ ...ventaForm, compradorEmail: e.target.value });
+                  if (ventaErrors.compradorEmail) {
+                    setVentaErrors({ ...ventaErrors, compradorEmail: "" });
+                  }
+                }}
                 disabled={vendiendo}
+                required
               />
+              {ventaErrors.compradorEmail && (
+                <span className="field-error">{ventaErrors.compradorEmail}</span>
+              )}
             </div>
             <div className="form-group">
-              <label>Nombre del comprador (opcional)</label>
-              <input
-                type="text"
-                placeholder="Nombre si vendiste fuera de la app"
-                value={ventaForm.compradorNombre}
-                onChange={(e) => setVentaForm({ ...ventaForm, compradorNombre: e.target.value })}
-                disabled={vendiendo}
-              />
-            </div>
-            <div className="form-group">
-              <label>Nota</label>
+              <label>Nota (opcional)</label>
               <input
                 type="text"
                 placeholder="Ej: Pago en efectivo"
@@ -297,7 +362,7 @@ export default function MisMotos() {
               />
             </div>
             <div className="modal-actions">
-              <button type="button" className="btn btn-outline" onClick={() => setVenderMoto(null)} disabled={vendiendo}>
+              <button type="button" className="btn btn-outline" onClick={cerrarModalVenta} disabled={vendiendo}>
                 Cancelar
               </button>
               <button type="button" className="btn btn-primary" onClick={confirmarVenta} disabled={vendiendo}>

@@ -1,4 +1,5 @@
-const PLACEHOLDER = "https://via.placeholder.com/400x300?text=Moto";
+export const PLACEHOLDER =
+  "https://via.placeholder.com/400x300/1a2332/94a3b8?text=Sin+imagen";
 
 export const getApiOrigin = () => {
   const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3000/api";

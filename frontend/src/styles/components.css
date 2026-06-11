@@ -17,8 +17,32 @@
   padding: 1.5rem;
   max-width: 420px;
   width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: var(--shadow);
   color: var(--text);
+}
+
+@media (max-width: 640px) {
+  .modal-overlay {
+    padding: 0.75rem;
+    align-items: flex-end;
+  }
+
+  .modal-card {
+    padding: 1.25rem;
+    max-height: 85vh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .modal-actions {
+    flex-direction: column-reverse;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
 }
 
 .modal-card h3 {
