@@ -20,12 +20,17 @@
   padding: 0;
 }
 
+html {
+  overflow-x: hidden;
+}
+
 body {
   font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
   background: var(--bg);
   color: var(--text);
   line-height: 1.6;
   min-height: 100vh;
+  overflow-x: hidden;
 }
 
 a {
@@ -42,6 +47,14 @@ a:hover {
   max-width: 1200px;
   margin: 0 auto;
   padding: 2rem 1.5rem;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+@media (max-width: 640px) {
+  .page-container {
+    padding: 1.25rem 1rem;
+  }
 }
 
 .page-header {

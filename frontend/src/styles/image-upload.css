@@ -35,3 +35,16 @@
   opacity: 0.5;
   pointer-events: none;
 }
+
+.field-hint {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--success);
+  margin-top: 0.25rem;
+}
+
+@media (max-width: 640px) {
+  .image-preview {
+    max-width: 100%;
+  }
+}
